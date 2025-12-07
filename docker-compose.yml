@@ -28,7 +28,7 @@ services:
       DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/careerlens
       # Add other environment variables here or load from an env file
     ports:
-      - "8000:8000"
+      - "8001:8000"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 volumes:
