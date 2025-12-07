@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CareerLens{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-brand:hover {
+            color: #764ba2;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .navbar-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .navbar-links a:hover {
+            color: #667eea;
+        }
+
+        .navbar-links .active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.25rem;
+        }
+
+        .navbar-links .auth-btn {
+            background: #667eea;
+            color: white !important;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .navbar-links .auth-btn:hover {
+            background: #764ba2;
+            color: white !important;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            color: white;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        main {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(255, 255, 255, 0.95);
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+
+            main {
+                padding: 1.5rem;
+            }
+
+            .container {
+                margin: 1rem auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .navbar-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+
+            .navbar-links a {
+                font-size: 0.85rem;
+                padding: 0.5rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <span>🎯</span>
+                CareerLens
+            </a>
+            <ul class="navbar-links">
+                <li><a href="/" class="{% if request.url.path == '/' %}active{% endif %}">Home</a></li>
+                <li><a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a></li>
+                <li><a href="/upload-resume" class="{% if request.url.path == '/upload-resume' %}active{% endif %}">Upload Resume</a></li>
+                <li><a href="/job-matches" class="{% if request.url.path == '/job-matches' %}active{% endif %}">Job Matches</a></li>
+                <li><a href="/interview-prep" class="{% if request.url.path == '/interview-prep' %}active{% endif %}">Interview Prep</a></li>
+                <li id="auth-link">
+                    <a href="/login" class="auth-btn" id="auth-btn-text">Login</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 CareerLens. All rights reserved. | AI-Powered Resume Analysis & Job Matching</p>
+    </footer>
+
+    <script>
+        // Check if user is logged in
+        function checkAuthStatus() {
+            const token = localStorage.getItem('access_token');
+            const authLink = document.getElementById('auth-link');
+            const authBtn = document.getElementById('auth-btn-text');
+            
+            if (token) {
+                authBtn.textContent = 'Logout';
+                authBtn.href = '#';
+                authBtn.onclick = logout;
+            } else {
+                authBtn.textContent = 'Login';
+                authBtn.href = '/login';
+                authBtn.onclick = null;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login';
+        }
+
+        // Check auth status on page load
+        document.addEventListener('DOMContentLoaded', checkAuthStatus);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

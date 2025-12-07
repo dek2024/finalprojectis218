@@ -1,0 +1,617 @@
+{% extends "base.html" %}
+
+{% block title %}Job Matches - CareerLens{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.8rem;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .page-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .jobs-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .job-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .job-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .job-title {
+        font-size: 1.3rem;
+        color: #333;
+        margin: 0;
+        font-weight: 600;
+        flex: 1;
+    }
+
+    /* score badge removed */
+
+    .job-company {
+        font-size: 1.1rem;
+        color: #667eea;
+        margin: 0 0 0.5rem 0;
+        font-weight: 500;
+    }
+
+    .job-location {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .job-description {
+        color: #777;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+        flex: 1;
+    }
+
+    .job-footer {
+        display: flex;
+        gap: 0.8rem;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 0.7rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+        border: 2px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+        background: #e8e8e8;
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .filters {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-group label {
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .filter-group input,
+    .filter-group select {
+        padding: 0.6rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: border-color 0.2s ease;
+        font-family: inherit;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state-title {
+        font-size: 1.3rem;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .empty-state-message {
+        color: #999;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state-action {
+        display: inline-block;
+        padding: 0.8rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .empty-state-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .error-message {
+        background: #fee;
+        color: #c33;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #c33;
+        display: none;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #667eea;
+        font-weight: 500;
+    }
+
+    .jobs-count {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Slide-in animation when coming from upload */
+    .job-matches-animate {
+        animation: slideUpFade 0.6s ease-out;
+    }
+
+    @keyframes slideUpFade {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Resume summary + chat panel */
+    .resume-summary-panel {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        display: none;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1.5fr);
+        gap: 1.2rem;
+    }
+
+    .resume-summary-section h3 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    .resume-summary-section p {
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.5;
+        white-space: pre-line;
+    }
+
+    .chat-panel {
+        border-left: 1px solid #eee;
+        padding-left: 1.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .chat-messages {
+        max-height: 220px;
+        overflow-y: auto;
+        padding-right: 0.4rem;
+        font-size: 0.85rem;
+    }
+
+    .chat-message {
+        margin-bottom: 0.4rem;
+    }
+
+    .chat-message.user {
+        color: #333;
+        font-weight: 500;
+    }
+
+    .chat-message.ai {
+        color: #555;
+    }
+
+    .chat-input-row {
+        display: flex;
+        gap: 0.4rem;
+        margin-top: 0.2rem;
+    }
+
+    .chat-input-row input {
+        flex: 1;
+        padding: 0.5rem 0.7rem;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        font-size: 0.85rem;
+    }
+
+    .chat-input-row button {
+        padding: 0.5rem 0.9rem;
+        border-radius: 6px;
+        border: none;
+        background: #667eea;
+        color: white;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .chat-input-row button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .jobs-container {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .filters {
+            grid-template-columns: 1fr;
+        }
+
+        .job-header {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main id="job-matches-root">
+    <div id="error-message" class="error-message"></div>
+    <div id="loading" class="loading">Loading job matches...</div>
+
+    <div id="jobs-content" style="display: none;">
+        <div class="page-header">
+            <h1>💼 Job Matches</h1>
+            <p>Find opportunities that match your profile</p>
+        </div>
+
+        <!-- Resume Summary (no chat, auto-matched jobs) -->
+        <section class="resume-summary-panel" id="resume-summary-panel">
+            <div class="resume-summary-section">
+                <h3>Your Resume Summary</h3>
+                <p id="resume-summary-text">Analyzing your latest resume...</p>
+            </div>
+        </section>
+
+        <div class="jobs-count">
+            Found <span id="jobs-count">0</span> job(s)
+        </div>
+
+        <!-- Filters and call-to-action -->
+        <div class="filters" style="margin-top: 0;">
+            <div class="filter-group">
+                <label for="job-type-filter">Job Type</label>
+                <select id="job-type-filter">
+                    <option value="all">All types</option>
+                    <option value="full-time">Full-time</option>
+                    <option value="part-time">Part-time</option>
+                    <option value="internship">Internship</option>
+                    <option value="contract">Contract</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <button id="find-jobs-btn" class="empty-state-action" type="button" style="width: 100%; text-align: center;">
+                    Find Jobs Based on My Resume
+                </button>
+                <small style="color: #777; margin-top: 0.4rem;">This may take a few seconds while we fetch matching roles.</small>
+            </div>
+        </div>
+
+        <!-- Jobs Grid -->
+        <div id="jobs-container" class="jobs-container"></div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">🔍</div>
+            <h2 class="empty-state-title">No Jobs Found</h2>
+            <p class="empty-state-message">Try running a search based on your resume or uploading an updated resume.</p>
+            <a href="/upload-resume" class="empty-state-action">Upload Resume</a>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allJobs = [];
+
+    function getSelectedJobType() {
+        const select = document.getElementById('job-type-filter');
+        return select ? select.value : 'all';
+    }
+
+    function normalizeJobType(job) {
+        const title = (job.title || '').toLowerCase();
+        const desc = (job.description || '').toLowerCase();
+        const combined = `${title} ${desc}`;
+
+        if (combined.includes('intern')) return 'internship';
+        if (combined.includes('part-time') || combined.includes('part time')) return 'part-time';
+        if (combined.includes('contract')) return 'contract';
+        if (combined.includes('full-time') || combined.includes('full time')) return 'full-time';
+        return 'unknown';
+    }
+
+    async function loadJobMatches() {
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        const content = document.getElementById('jobs-content');
+        const accessToken = localStorage.getItem('access_token');
+
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/jobs/matches', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+            });
+
+            if (response.ok) {
+                allJobs = await response.json();
+                renderJobs(allJobs);
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            } else {
+                throw new Error('Failed to load jobs');
+            }
+        } catch (error) {
+            errorMsg.textContent = 'Failed to load job matches. Please try again.';
+            errorMsg.style.display = 'block';
+            loading.style.display = 'none';
+            content.style.display = 'block';
+        }
+    }
+
+    async function runJobSearch() {
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        const content = document.getElementById('jobs-content');
+        const accessToken = localStorage.getItem('access_token');
+
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        errorMsg.style.display = 'none';
+        loading.textContent = 'Finding jobs that match your resume...';
+        loading.style.display = 'block';
+        content.style.display = 'none';
+
+        try {
+            const resp = await fetch('/api/jobs/search', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+            });
+
+            if (!resp.ok) {
+                throw new Error('Job search failed');
+            }
+
+            // After search completes, reload matches from the database
+            await loadJobMatches();
+        } catch (err) {
+            console.error('Job search failed', err);
+            errorMsg.textContent = 'Unable to fetch jobs right now. Please try again in a moment.';
+            errorMsg.style.display = 'block';
+            loading.style.display = 'none';
+            content.style.display = 'block';
+        }
+    }
+
+    async function loadLatestResumeSummary() {
+        const accessToken = localStorage.getItem('access_token');
+        if (!accessToken) return;
+
+        try {
+            const listResp = await fetch('/api/resume/list', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${accessToken}` },
+            });
+
+            if (!listResp.ok) return;
+
+            const resumes = await listResp.json();
+            if (!resumes.length) return;
+
+            const latest = resumes[resumes.length - 1];
+            const detailResp = await fetch(`/api/resume/${latest.id}`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${accessToken}` },
+            });
+
+            if (!detailResp.ok) return;
+
+            const detail = await detailResp.json();
+            const panel = document.getElementById('resume-summary-panel');
+            const summaryEl = document.getElementById('resume-summary-text');
+
+            const summary = detail.content || detail.summary;
+            if (summary) {
+                panel.style.display = 'grid';
+                summaryEl.textContent = summary;
+            }
+        } catch (err) {
+            console.error('Failed to load latest resume summary', err);
+        }
+    }
+
+    function renderJobs(jobs) {
+        const container = document.getElementById('jobs-container');
+        const emptyState = document.getElementById('empty-state');
+        const countSpan = document.getElementById('jobs-count');
+
+        const selectedType = getSelectedJobType();
+        const filtered = jobs.filter(job => {
+            if (selectedType === 'all') return true;
+            const jt = normalizeJobType(job);
+            return jt === selectedType;
+        });
+
+        countSpan.textContent = filtered.length;
+
+        if (filtered.length === 0) {
+            container.innerHTML = '';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        container.innerHTML = filtered.map(job => `
+            <div class="job-card">
+                <div class="job-header">
+                    <h2 class="job-title">${job.title}</h2>
+                </div>
+                <h3 class="job-company">${job.company}</h3>
+                <div class="job-location">
+                    📍 ${job.location}
+                </div>
+                <p class="job-description">
+                    ${job.url ? `A great opportunity at ${job.company}. This role matches your profile well based on your resume.` : 'Job details'}
+                </p>
+                <div class="job-footer">
+                    ${job.url ? `<a href="${job.url}" target="_blank" class="btn btn-primary">View Job</a>` : '<span class="btn btn-primary" style="opacity: 0.6;">Details Coming</span>'}
+                    <button class="btn btn-secondary" onclick="alert('Job saved! (demo only)')">Save Job</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Save Job is currently a simple demo button without persistence
+
+    // Event listeners for filters and chat
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const rootEl = document.getElementById('job-matches-root');
+        if (params.get('from') === 'upload') {
+            rootEl.classList.add('job-matches-animate');
+            // Automatically kick off a job search after uploading a resume
+            runJobSearch();
+        } else {
+            loadJobMatches();
+        }
+
+        loadLatestResumeSummary();
+
+        const findJobsBtn = document.getElementById('find-jobs-btn');
+        if (findJobsBtn) {
+            findJobsBtn.addEventListener('click', runJobSearch);
+        }
+
+        const jobTypeFilter = document.getElementById('job-type-filter');
+        if (jobTypeFilter) {
+            jobTypeFilter.addEventListener('change', () => {
+                renderJobs(allJobs);
+            });
+        }
+    });
+</script>
+{% endblock %}

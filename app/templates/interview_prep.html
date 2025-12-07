@@ -1,0 +1,753 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Prep - CareerLens{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.8rem;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .page-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .header-actions {
+        margin-top: 1.5rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: white;
+        color: #667eea;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid white;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .questions-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .question-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .question-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .question-number {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .question-actions {
+        display: flex;
+        gap: 0.4rem;
+    }
+
+    .btn-icon {
+        width: 2rem;
+        height: 2rem;
+        border: none;
+        background: #f0f0f0;
+        color: #333;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-icon.delete:hover {
+        background: #c33;
+    }
+
+    .question-text {
+        font-size: 1.1rem;
+        color: #333;
+        margin: 0 0 1rem 0;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+
+    .answer-section {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .answer-label {
+        color: #667eea;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .answer-text {
+        color: #666;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        background: #f8f8f8;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 0.8rem;
+    }
+
+    .no-answer {
+        color: #999;
+        font-style: italic;
+        font-size: 0.9rem;
+    }
+
+    .answer-form {
+        display: none;
+    }
+
+    .answer-form.show {
+        display: block;
+    }
+
+    .answer-textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        resize: vertical;
+        transition: border-color 0.2s ease;
+    }
+
+    .answer-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .answer-buttons {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .answer-buttons button {
+        flex: 1;
+        padding: 0.6rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .answer-buttons .save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .answer-buttons .save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .answer-buttons .cancel {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .answer-buttons .cancel:hover {
+        background: #e0e0e0;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state-title {
+        font-size: 1.3rem;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .empty-state-message {
+        color: #999;
+        margin-bottom: 1.5rem;
+    }
+
+    .error-message {
+        background: #fee;
+        color: #c33;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #c33;
+        display: none;
+    }
+
+    .success-message {
+        background: #efe;
+        color: #3c3;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #3c3;
+        display: none;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #667eea;
+        font-weight: 500;
+    }
+
+    .questions-count {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .header-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .questions-container {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .question-header {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .question-actions {
+            align-self: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
+    <div id="loading" class="loading">Loading your interview prep questions...</div>
+
+    <div id="interview-content" style="display: none;">
+        <div class="page-header">
+            <h1>🎤 Interview Preparation</h1>
+            <p>Practice with AI-generated interview questions</p>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="generateNewQuestions()">Generate New Questions</button>
+                <button class="btn btn-secondary" onclick="clearAllQuestions()">Clear All Questions</button>
+            </div>
+        </div>
+
+        <div class="questions-count">
+            <span id="questions-count">0</span> question(s) ready for practice
+        </div>
+
+        <!-- Questions Container -->
+        <div id="questions-container" class="questions-container"></div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📝</div>
+            <h2 class="empty-state-title">No Questions Yet</h2>
+            <p class="empty-state-message">Get started with your interview preparation by generating interview questions based on your resume.</p>
+            <button class="btn btn-primary" onclick="generateNewQuestions()">Generate Questions</button>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let questions = [];
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+    let activeQuestionId = null;
+
+    async function loadQuestions() {
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        const content = document.getElementById('interview-content');
+        const accessToken = localStorage.getItem('access_token');
+
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/interview/list', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Show newest questions first by created_at descending if present
+                data.sort((a, b) => {
+                    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+                    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+                    return bTime - aTime;
+                });
+                questions = data;
+                renderQuestions(questions);
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            } else {
+                throw new Error('Failed to load questions');
+            }
+        } catch (error) {
+            errorMsg.textContent = 'Failed to load interview questions. Please try again.';
+            errorMsg.style.display = 'block';
+            loading.style.display = 'none';
+            content.style.display = 'block';
+        }
+    }
+
+    function renderQuestions(qs) {
+        const container = document.getElementById('questions-container');
+        const emptyState = document.getElementById('empty-state');
+        const countSpan = document.getElementById('questions-count');
+
+        countSpan.textContent = qs.length;
+
+        if (qs.length === 0) {
+            container.innerHTML = '';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        container.innerHTML = qs.map((q, index) => `
+            <div class="question-card">
+                <div class="question-header">
+                    <div class="question-number">${index + 1}</div>
+                    <div class="question-actions">
+                        <button class="btn-icon" title="Speak question" onclick="speakQuestion(${q.id})">🔊</button>
+                        <button class="btn-icon" id="mic-${q.id}" title="Start/stop recording" onclick="toggleRecording(${q.id})">🎙️</button>
+                        <button class="btn-icon" title="Edit" onclick="toggleEditAnswer(${q.id})">✏️</button>
+                        <button class="btn-icon delete" title="Delete" onclick="deleteQuestion(${q.id})">🗑️</button>
+                    </div>
+                </div>
+                <p class="question-text">${q.question}</p>
+                <div class="answer-section">
+                    <span class="answer-label">Your Answer:</span>
+                    ${q.answer ? `<div class="answer-text">${q.answer}</div>` : '<div class="no-answer">No answer provided yet</div>'}
+                    <div class="answer-form" id="form-${q.id}">
+                        <textarea class="answer-textarea" id="textarea-${q.id}" placeholder="Type your answer here...">${q.answer || ''}</textarea>
+                        <div class="answer-buttons">
+                            <button class="save" onclick="saveAnswer(${q.id})">Save Answer</button>
+                            <button class="cancel" onclick="toggleEditAnswer(${q.id})">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="answer-feedback" id="feedback-${q.id}"></div>
+                        <button class="btn btn-secondary" onclick="toggleEditAnswer(${q.id})" style="width: 100%; margin-top: 0.5rem;">
+                        ${q.answer ? 'Update Answer' : 'Add Answer'}
+                    </button>
+                    <button class="btn btn-secondary" onclick="analyzeTypedAnswer(${q.id})" style="width: 100%; margin-top: 0.5rem;">
+                        Analyze This Answer
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function clearAllQuestions() {
+        const accessToken = localStorage.getItem('access_token');
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        const confirmClear = confirm('Are you sure you want to remove all interview questions and answers?');
+        if (!confirmClear) return;
+
+        const errorMsg = document.getElementById('error-message');
+        const successMsg = document.getElementById('success-message');
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+
+        try {
+            const resp = await fetch('/api/interview/clear', {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+            });
+
+            if (!resp.ok) {
+                throw new Error('Failed to clear questions');
+            }
+
+            questions = [];
+            renderQuestions(questions);
+            successMsg.textContent = 'All interview questions have been cleared.';
+            successMsg.style.display = 'block';
+        } catch (err) {
+            console.error('Failed to clear questions', err);
+            errorMsg.textContent = 'Could not clear questions. Please try again.';
+            errorMsg.style.display = 'block';
+        }
+    }
+
+    function toggleEditAnswer(questionId) {
+        const form = document.getElementById(`form-${questionId}`);
+        form.classList.toggle('show');
+    }
+
+    async function saveAnswer(questionId) {
+        const accessToken = localStorage.getItem('access_token');
+        const textarea = document.getElementById(`textarea-${questionId}`);
+        const answer = textarea.value.trim();
+
+        if (!answer) {
+            alert('Please enter an answer');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/interview/${questionId}/answer`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ answer }),
+            });
+
+            if (response.ok) {
+                const successMsg = document.getElementById('success-message');
+                successMsg.textContent = 'Answer saved successfully!';
+                successMsg.style.display = 'block';
+
+                loadQuestions();
+
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 2000);
+            } else {
+                alert('Failed to save answer');
+            }
+        } catch (error) {
+            alert('An error occurred while saving the answer');
+        }
+    }
+
+    async function deleteQuestion(questionId) {
+        if (!confirm('Are you sure you want to delete this question?')) return;
+
+        const accessToken = localStorage.getItem('access_token');
+
+        try {
+            const response = await fetch(`/api/interview/${questionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+            });
+
+            if (response.ok) {
+                loadQuestions();
+            } else {
+                alert('Failed to delete question');
+            }
+        } catch (error) {
+            alert('An error occurred while deleting the question');
+        }
+    }
+
+    async function generateNewQuestions() {
+        const accessToken = localStorage.getItem('access_token');
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        const loading = document.getElementById('loading');
+        loading.style.display = 'block';
+        loading.textContent = 'Generating interview questions...';
+
+        try {
+            const response = await fetch('/api/interview/generate', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({}),
+            });
+
+            if (response.ok) {
+                const successMsg = document.getElementById('success-message');
+                successMsg.textContent = 'New questions generated successfully!';
+                successMsg.style.display = 'block';
+
+                loadQuestions();
+
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 2000);
+            } else {
+                const errorMsg = document.getElementById('error-message');
+                errorMsg.textContent = 'Failed to generate questions. Please try again.';
+                errorMsg.style.display = 'block';
+            }
+        } catch (error) {
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.textContent = 'An error occurred while generating questions.';
+            errorMsg.style.display = 'block';
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+
+    function speakQuestion(questionId) {
+        const q = questions.find(q => q.id === questionId);
+        if (!q || !('speechSynthesis' in window)) return;
+
+        const utterance = new SpeechSynthesisUtterance(q.question);
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function toggleRecording(questionId) {
+        const accessToken = localStorage.getItem('access_token');
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+        const micBtn = document.getElementById(`mic-${questionId}`);
+
+        // If already recording, stop and finalize
+        if (isRecording && activeQuestionId === questionId) {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            isRecording = false;
+            if (micBtn) micBtn.textContent = '🎙️';
+            return;
+        }
+
+        // Start a new recording session using MediaRecorder
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                activeQuestionId = questionId;
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data && event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                    const formData = new FormData();
+                    formData.append('audio', blob, 'answer.webm');
+
+                    try {
+                        const resp = await fetch(`/api/interview/${activeQuestionId}/whisper-transcribe`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${accessToken}`
+                            },
+                            body: formData,
+                        });
+
+                        if (!resp.ok) {
+                            const errData = await resp.json().catch(() => ({}));
+                            alert(errData.detail || 'Failed to transcribe audio.');
+                            return;
+                        }
+
+                        const data = await resp.json();
+                        const transcript = (data.transcript || '').trim();
+                        const textarea = document.getElementById(`textarea-${activeQuestionId}`);
+                        if (textarea) {
+                            textarea.value = transcript;
+                        }
+
+                        if (transcript) {
+                            await runAnalysis(activeQuestionId, transcript);
+                        }
+                    } catch (err) {
+                        console.error('Error sending audio for transcription', err);
+                        alert('An error occurred while transcribing the audio.');
+                    } finally {
+                        // stop all tracks on the stream
+                        stream.getTracks().forEach(t => t.stop());
+                    }
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                if (micBtn) micBtn.textContent = '⏹️';
+            })
+            .catch(err => {
+                console.error('Could not start audio recording', err);
+                alert('Could not access microphone. Please check your permissions.');
+            });
+    }
+
+    async function runAnalysis(questionId, answerText) {
+        const accessToken = localStorage.getItem('access_token');
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        const feedbackEl = document.getElementById(`feedback-${questionId}`);
+        if (!feedbackEl) return;
+
+        try {
+            const resp = await fetch(`/api/interview/${questionId}/analyze`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ answer: answerText }),
+            });
+
+            if (!resp.ok) {
+                const errData = await resp.json().catch(() => ({}));
+                feedbackEl.textContent = errData.detail || 'Could not analyze answer.';
+                return;
+            }
+
+            const data = await resp.json();
+            const fillerCount = data.filler_word_count ?? 'N/A';
+            const fillerExamples = (data.filler_examples || []).join(', ');
+            const star = data.star_coverage || {};
+            const critique = data.critique || [];
+
+            feedbackEl.innerHTML = `
+                <div style="margin-top:0.5rem; font-size:0.85rem; color:#444;">
+                    <strong>AI Feedback:</strong><br>
+                    Filler words: <strong>${fillerCount}</strong>${fillerExamples ? ` (${fillerExamples})` : ''}<br>
+                    STAR coverage: 
+                    S: ${star.situation || 'unknown'}, 
+                    T: ${star.task || 'unknown'}, 
+                    A: ${star.action || 'unknown'}, 
+                    R: ${star.result || 'unknown'}<br>
+                    ${critique.length ? '<ul>' + critique.map(c => `<li>${c}</li>`).join('') + '</ul>' : ''}
+                </div>
+            `;
+        } catch (err) {
+            console.error('Failed to analyze answer', err);
+            feedbackEl.textContent = 'An unexpected error occurred while analyzing.';
+        }
+    }
+
+    async function analyzeTypedAnswer(questionId) {
+        const textarea = document.getElementById(`textarea-${questionId}`);
+        const text = (textarea?.value || '').trim();
+        if (!text) {
+            alert('Please enter or record an answer first.');
+            return;
+        }
+        await runAnalysis(questionId, text);
+    }
+
+    // Load questions on page load
+    document.addEventListener('DOMContentLoaded', loadQuestions);
+</script>
+{% endblock %}

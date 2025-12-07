@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - CareerLens{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.8rem;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .dashboard-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-title {
+        font-size: 1.3rem;
+        color: #333;
+        margin: 0.5rem 0;
+        font-weight: 600;
+    }
+
+    .card-count {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin: 0.5rem 0;
+    }
+
+    .card-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        padding: 0.7rem 1.2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        padding: 0.7rem 1.2rem;
+        background: #f0f0f0;
+        color: #333;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #e8e8e8;
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .quick-links {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .quick-links h3 {
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+    }
+
+    .links-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .link-item {
+        padding: 1rem;
+        background: #f8f8f8;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #667eea;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .link-item:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #999;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .error-message {
+        background: #fee;
+        color: #c33;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #c33;
+        display: none;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #667eea;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .links-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div id="error-message" class="error-message"></div>
+    <div id="loading" class="loading">Loading your dashboard...</div>
+
+    <div id="dashboard-content" style="display: none;">
+        <div class="dashboard-header">
+            <h1>Welcome back, <span id="user-name">User</span>! 👋</h1>
+            <p>Here's your CareerLens overview</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Resumes Card -->
+            <div class="card">
+                <div class="card-icon">📄</div>
+                <h2 class="card-title">Your Resumes</h2>
+                <div class="card-count" id="resume-count">0</div>
+                <p class="card-description">Upload and manage your resumes</p>
+                <div class="card-actions">
+                    <a href="/upload-resume" class="btn-primary">Upload Resume</a>
+                </div>
+            </div>
+
+            <!-- Job Matches Card -->
+            <div class="card">
+                <div class="card-icon">💼</div>
+                <h2 class="card-title">Job Matches</h2>
+                <div class="card-count" id="job-count">0</div>
+                <p class="card-description">Find opportunities that match your profile</p>
+                <div class="card-actions">
+                    <a href="/job-matches" class="btn-primary">Browse Jobs</a>
+                </div>
+            </div>
+
+            <!-- Interview Prep Card -->
+            <div class="card">
+                <div class="card-icon">🎤</div>
+                <h2 class="card-title">Interview Prep</h2>
+                <div class="card-count" id="interview-count">0</div>
+                <p class="card-description">Prepare with AI-generated questions</p>
+                <div class="card-actions">
+                    <a href="/interview-prep" class="btn-primary">Get Questions</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <h3>Quick Links</h3>
+            <div class="links-grid">
+                <a href="/upload-resume" class="link-item">
+                    <span>📤</span>
+                    <span>Upload Resume</span>
+                </a>
+                <a href="/job-matches" class="link-item">
+                    <span>🔍</span>
+                    <span>Find Jobs</span>
+                </a>
+                <a href="/interview-prep" class="link-item">
+                    <span>💡</span>
+                    <span>Interview Tips</span>
+                </a>
+                <a href="#settings" class="link-item">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function loadDashboard() {
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        const content = document.getElementById('dashboard-content');
+        const accessToken = localStorage.getItem('access_token');
+
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            // Fetch current user
+            const userResponse = await fetch('/api/auth/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+            });
+
+            if (!userResponse.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+
+            const user = await userResponse.json();
+            document.getElementById('user-name').textContent = user.full_name || user.username;
+
+            // Fetch resume count
+            try {
+                const resumeResponse = await fetch('/api/resume/list', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                });
+
+                if (resumeResponse.ok) {
+                    const resumes = await resumeResponse.json();
+                    document.getElementById('resume-count').textContent = resumes.length || 0;
+                }
+            } catch (e) {
+                console.error('Failed to fetch resume count:', e);
+            }
+
+            // Fetch job matches count
+            try {
+                const jobResponse = await fetch('/api/jobs/matches', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                });
+
+                if (jobResponse.ok) {
+                    const jobs = await jobResponse.json();
+                    document.getElementById('job-count').textContent = jobs.length || 0;
+                }
+            } catch (e) {
+                console.error('Failed to fetch job matches:', e);
+            }
+
+            // Fetch interview prep count
+            try {
+                const interviewResponse = await fetch('/api/interview/list', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                });
+
+                if (interviewResponse.ok) {
+                    const interviews = await interviewResponse.json();
+                    document.getElementById('interview-count').textContent = interviews.length || 0;
+                }
+            } catch (e) {
+                console.error('Failed to fetch interview prep count:', e);
+            }
+
+            loading.style.display = 'none';
+            content.style.display = 'block';
+        } catch (error) {
+            errorMsg.textContent = 'Failed to load dashboard. Please try again.';
+            errorMsg.style.display = 'block';
+            loading.style.display = 'none';
+        }
+    }
+
+    // Load dashboard on page load
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+
+# Virtual environments
+venv/
+.env*/
+.venv/
+.env.local
+
+# Env & secrets
+.env
+*.env
+*.env.*
+
+# VS Code / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+log/
+logs/
+
+# SQLite DB
+*.db
+*.sqlite3
+
+# Coverage / test
+htmlcov/
+.tox/
+.nox/
+.coverage*
+.pytest_cache/
+
+# Static build artifacts
+staticfiles/
